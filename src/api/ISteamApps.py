@@ -36,7 +36,7 @@ def db_insert_appid(sql, data):
 def db_clear_old_appid():
     connect = odbc.odbc('oasis')
     db = connect.cursor()
-    sql = '''TRUNCATE oasis.appid'''
+    sql = '''TRUNCATE oasis.applist'''
     db.execute(sql)
 
 
@@ -44,7 +44,7 @@ def db_update_app_list():
     data = api_get_app_list()
     db_clear_old_appid()
     sql = '''
-        INSERT INTO oasis.appid(appid, name) 
+        INSERT INTO oasis.applist(appid, name) 
         VALUES ("%d",("%s")) '''
 
     db_insert_appid(sql, data)

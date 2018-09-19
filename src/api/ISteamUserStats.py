@@ -4,6 +4,22 @@ import src.utills.dateFormatter as df
 
 
 def db_get_all_apps():
+    """
+    :return: all apps(appid, name)
+    """
+    connect = odbc.odbc('oasis')
+    db = connect.cursor()
+    sql = '''SELECT appid, name FROM oasis.applist'''
+    db.execute(sql)
+    r = db.fetchall()
+    return r
+
+
+def db_get_apps(table):
+    """
+    :param table: Which table you want to use
+    :return: app data (appid, name)
+    """
     connect = odbc.odbc('oasis')
     db = connect.cursor()
     sql = '''SELECT appid, name FROM oasis.appid'''
@@ -32,7 +48,7 @@ def api_get_number_of_current_players(appid):
         return 0
 
 
-def insert_into_db(data):
+def db_insert_current_players(data):
     connect = odbc.odbc('oasis')
     db = connect.cursor()
     sql = '''
@@ -47,6 +63,4 @@ def db_update_current_players():
     for app in apps:
         data = {'appid': app[0], 'name': app[1], 'player_count': api_get_number_of_current_players(app[0])}
         # print(data)
-        insert_into_db(data)
-
-
+        db_insert_current_players(data)
