@@ -22,7 +22,7 @@ def db_get_apps(table):
     """
     connect = odbc.odbc('oasis')
     db = connect.cursor()
-    sql = '''SELECT appid, name FROM oasis.appid'''
+    sql = '''SELECT appid, name FROM oasis.''' + str(table)
     db.execute(sql)
     r = db.fetchall()
     return r
