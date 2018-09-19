@@ -42,7 +42,7 @@ def insert_into_db(data):
     db.execute(sql % (data['appid'], data['name'], int(data['player_count']), date))
 
 
-def update_current_players():
+def db_update_current_players():
     apps = db_get_all_apps()
     for app in apps:
         data = {'appid': app[0], 'name': app[1], 'player_count': api_get_number_of_current_players(app[0])}

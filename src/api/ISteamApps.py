@@ -16,7 +16,7 @@ def api_get_app_list():
     return applist
 
 
-def insert_into_db(sql, data):
+def db_insert_appid(sql, data):
     """
     TODO: prevent sql injection
     insert data into db
@@ -33,13 +33,21 @@ def insert_into_db(sql, data):
         print(app)
 
 
-def update_app_list():
+def db_clear_old_appid():
+    connect = odbc.odbc('oasis')
+    db = connect.cursor()
+    sql = '''TRUNCATE oasis.appid'''
+    db.execute(sql)
+
+
+def db_update_app_list():
     data = api_get_app_list()
+    db_clear_old_appid()
     sql = '''
         INSERT INTO oasis.appid(appid, name) 
         VALUES ("%d",("%s")) '''
 
-    insert_into_db(sql, data)
+    db_insert_appid(sql, data)
 
 
 

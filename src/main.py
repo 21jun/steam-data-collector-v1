@@ -1,4 +1,4 @@
 import src.api.ISteamUserStats as SteamUserStats
 
-SteamUserStats.update_current_players()
+SteamUserStats.db_update_current_players()
 
