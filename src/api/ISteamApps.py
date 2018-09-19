@@ -2,9 +2,10 @@ import requests
 import odbc
 
 
-def get_app_list():
+def api_get_app_list():
     """
-    call steam api GetAppList
+    return all games in steam
+    approximately 66000+
     :return: list of {"appid":"appid (number)" , "name":"name of game"}
     """
     url = 'http://api.steampowered.com/ISteamApps/GetAppList/v0001/'
@@ -23,7 +24,6 @@ def insert_into_db(sql, data):
     :param data: data
     :return: success or fail
     """
-
     connect = odbc.odbc('oasis')
     db = connect.cursor()
     for app in data:
@@ -33,9 +33,13 @@ def insert_into_db(sql, data):
         print(app)
 
 
-data1 = get_app_list()
-sql = '''
-    INSERT INTO oasis.appid(appid, name) 
-    VALUES ("%d",("%s")) '''
+def update_app_list():
+    data = api_get_app_list()
+    sql = '''
+        INSERT INTO oasis.appid(appid, name) 
+        VALUES ("%d",("%s")) '''
 
-insert_into_db(sql, data1)
+    insert_into_db(sql, data)
+
+
+
