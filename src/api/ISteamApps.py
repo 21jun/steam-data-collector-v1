@@ -29,7 +29,10 @@ def db_insert_appid(sql, data):
     for app in data:
         appid = int(app['appid'])
         name = app['name'].replace('\"', "'")
-        db.execute(sql % (appid, name))
+        try:
+            db.execute(sql % (appid, name))
+        except:
+            continue
         print(app)
 
 
@@ -41,6 +44,10 @@ def db_clear_old_appid():
 
 
 def db_update_app_list():
+    """
+    takes 10~15 minutes...
+    :return:
+    """
     data = api_get_app_list()
     db_clear_old_appid()
     sql = '''
