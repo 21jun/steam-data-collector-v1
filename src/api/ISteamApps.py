@@ -13,7 +13,7 @@ class GetAppList:
     def __api_get_app_list():
         """
         return all games in steam
-        approximately 66000+
+        approximately 67000+
         :return: list of {"appid":"appid (number)" , "name":"game name"}
         """
         url = 'http://api.steampowered.com/ISteamApps/GetAppList/v0001/'

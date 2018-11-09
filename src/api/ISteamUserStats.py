@@ -49,6 +49,7 @@ class GetNumberOfCurrentPlayers:
         self.db.execute(sql % (data['appid'], data['name'], int(data['player_count']), date))
         print(data['appid'], data['name'], int(data['player_count']), date)
 
+    @staticmethod
     def db_update_current_players(self, src='applist'):
         apps = self.__db_get_apps(src)
         for app in apps:
