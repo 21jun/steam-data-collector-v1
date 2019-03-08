@@ -3,12 +3,13 @@ from src.crawler import SteamAppParser
 import src.utills.GetAppIds as GetAppIds
 import schedule
 import time
+from tqdm import tqdm
 
 
 def page_parser(data_base, table, crawler):
     GetAppIds.db_update_dist_table('player_count', 'watching_games')
     apps = data_base.db_get_apps(table)
-    for app in apps:
+    for app in tqdm(apps):
         info = {
             'appid': int(app[0]),
             'name': app[1]

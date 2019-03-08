@@ -1,6 +1,7 @@
 import requests
 import odbc
 import src.utills.dateFormatter as df
+from datetime import datetime
 
 
 class GetNumberOfCurrentPlayers:
@@ -29,7 +30,16 @@ class GetNumberOfCurrentPlayers:
         """
         url = 'http://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v0001/?appid=' \
               + str(appid) + '&format=json'
-        req = requests.get(url)
+        try:
+            req = requests.get(url)
+        except ConnectionError:
+            return 0
+        except TimeoutError:
+            return 0
+        except:
+            print("Error occur")
+            return 0
+
         json_data = req.json()
         try:
             player_count = json_data['response']['player_count']
@@ -52,7 +62,12 @@ class GetNumberOfCurrentPlayers:
     @staticmethod
     def db_update_current_players(self, src='applist'):
         apps = self.__db_get_apps(src)
-        for app in apps:
+        for app in (apps):
             data = {'appid': app[0], 'name': app[1], 'player_count': self.__api_get_number_of_current_players(app[0])}
+            if int(data['player_count']) == 0:
+                continue
             # print(data)
             self.__db_insert_current_players(data)
+        print("====================" + str(datetime.now()) + "====================")
+
+

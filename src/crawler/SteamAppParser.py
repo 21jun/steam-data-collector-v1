@@ -37,8 +37,11 @@ class DataBaseConnector:
                                data['tags'], data['date']))
 
     def db_update_app_data(self, data):
-        self.__db_insert_data(data)
-        print(data['appid'], data['name'])
+        try:
+            self.__db_insert_data(data)
+            print(data['appid'], data['name'])
+        except:
+            pass
         print('--------------------------')
 
 
@@ -93,7 +96,10 @@ class HeadlessChrome:
     def parse_url(self, url):
 
         self.__request_url(url)
-        self.__age_check()
+        try:
+            self.__age_check()
+        except:
+            return TimeoutError
         self.soup = self.__get_soup()
         return self.soup
 
@@ -174,56 +180,59 @@ class GetAppInfo:
         return result
 
     def get_info(self):
+        try:
+            tags = self.soup.select(
+                '#game_highlights > div > div > div > div > div.glance_tags.popular_tags'
+            )
+            if tags:
+                self.tags = ','.join(self.clean_tags(tags[0].text))
 
-        tags = self.soup.select(
-            '#game_highlights > div > div > div > div > div.glance_tags.popular_tags'
-        )
-        if tags:
-            self.tags = ','.join(self.clean_tags(tags[0].text))
+            info = self.soup.select(
+                '#game_highlights > div > div > div.glance_ctn_responsive_left > div '
+            )
+            if info:
+                info = self.clean_info(info[0].text)
 
-        info = self.soup.select(
-            '#game_highlights > div > div > div.glance_ctn_responsive_left > div '
-        )
-        if info:
-            info = self.clean_info(info[0].text)
+            for index, i in enumerate(info):
+                if 'Recent Reviews' in i:
+                    if not self.clean_number(info[index + 2]).isdigit():
+                        # Miss Recent Review count
+                        pass
+                    else:
+                        self.recent_review['evaluation'] = info[index + 1]
+                        self.recent_review['count'] = self.clean_number(info[index + 2])
+                        self.recent_review['positive_percentage'] = self.clean_percentage(info[index + 3])
 
-        for index, i in enumerate(info):
-            if 'Recent Reviews' in i:
-                if not self.clean_number(info[index + 2]).isdigit():
-                    # Miss Recent Review count
-                    pass
-                else:
-                    self.recent_review['evaluation'] = info[index + 1]
-                    self.recent_review['count'] = self.clean_number(info[index + 2])
-                    self.recent_review['positive_percentage'] = self.clean_percentage(info[index + 3])
+                if 'All Reviews' in i:
+                    if not self.clean_number(info[index + 2]).isdigit():
+                        # Need more review to generate evaluation
+                        pass
+                    else:
+                        self.all_review['evaluation'] = info[index + 1]
+                        self.all_review['count'] = self.clean_number(info[index + 2])
+                        self.all_review['positive_percentage'] = self.clean_percentage(info[index + 3])
 
-            if 'All Reviews' in i:
-                if not self.clean_number(info[index + 2]).isdigit():
-                    # Need more review to generate evaluation
-                    pass
-                else:
-                    self.all_review['evaluation'] = info[index + 1]
-                    self.all_review['count'] = self.clean_number(info[index + 2])
-                    self.all_review['positive_percentage'] = self.clean_percentage(info[index + 3])
+                if 'Developer' in i:
+                    self.developer = info[index + 1]
 
-            if 'Developer' in i:
-                self.developer = info[index + 1]
+                if 'Publisher' in i:
+                    self.publisher = info[index + 1]
 
-            if 'Publisher' in i:
-                self.publisher = info[index + 1]
+                if 'Release Date' in i:
+                    self.release_date = self.clean_date(info[index + 1])
 
-            if 'Release Date' in i:
-                self.release_date = self.clean_date(info[index + 1])
+            result = {
+                'name': self.name,
+                'appid': self.appid,
+                'recent_review': self.recent_review,
+                'all_review': self.all_review,
+                'developer': self.developer,
+                'publisher': self.publisher,
+                'tags': self.tags,
+                'release_date': self.release_date,
+                'date': self.date
+            }
+            return result
+        except:
+            return TimeoutError
 
-        result = {
-            'name': self.name,
-            'appid': self.appid,
-            'recent_review': self.recent_review,
-            'all_review': self.all_review,
-            'developer': self.developer,
-            'publisher': self.publisher,
-            'tags': self.tags,
-            'release_date': self.release_date,
-            'date': self.date
-        }
-        return result
