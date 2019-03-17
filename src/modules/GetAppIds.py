@@ -1,5 +1,11 @@
 import odbc
 
+'''
+How to use:
+1. dist table will be truncated
+2. 
+'''
+
 
 def __db_get_data_from_src_table(sql):
     connect = odbc.odbc('oasis')

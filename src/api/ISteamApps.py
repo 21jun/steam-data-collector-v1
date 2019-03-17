@@ -1,16 +1,21 @@
 import requests
 import odbc
 
+"""
+How to use:
+1. get GetAppList instance
+2. call db_update_app_list method once
+"""
+
 
 class GetAppList:
-
     def __init__(self):
         connect = odbc.odbc('oasis')
         db = connect.cursor()
         self.db = db
 
     @staticmethod
-    def __api_get_app_list():
+    def api_get_app_list():
         """
         return all games in steam
         approximately 67000+
@@ -37,6 +42,7 @@ class GetAppList:
             try:
                 self.db.execute(sql % (appid, name))
             except:
+                print("exception occur")
                 continue
             print(app)
 
@@ -52,7 +58,7 @@ class GetAppList:
         update applist table
         it takes 10~15 minutes...
         """
-        data = self.__api_get_app_list()
+        data = self.api_get_app_list()
         self.__db_clear_old_appid()
         sql = '''
             INSERT INTO oasis.applist(appid, name) 

@@ -1,8 +1,6 @@
 from src.utills.UrlGenerator import url_generator
 from src.crawler import SteamAppParser
-import src.utills.GetAppIds as GetAppIds
-import schedule
-import time
+import src.modules.GetAppIds as GetAppIds
 from tqdm import tqdm
 
 
@@ -23,14 +21,9 @@ def page_parser(data_base, table, crawler):
             print("TIME OUT")
 
 
-# initialize
-crawler = SteamAppParser.HeadlessChrome('C:/chromedriver_win32/chromedriver')
-data_base = SteamAppParser.DataBaseConnector()
+if __name__ == "__main__":
+    # initialize
+    crawler = SteamAppParser.HeadlessChrome('C:/chromedriver_win32/chromedriver')
+    data_base = SteamAppParser.DataBaseConnector()
 
-page_parser(data_base, 'watching_games', crawler)
-del crawler
-# while True:
-#     page_parser(data_base, 'watching_games', crawler)
-#     time.sleep(4*60*60)
-
-# del crawler
+    page_parser(data_base, 'watching_games', crawler)

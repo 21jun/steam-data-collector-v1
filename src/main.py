@@ -1,21 +1,23 @@
-import schedule
-import time
 from src.api import ISteamUserStats
-import src.api.ISteamApps as SteamApps
-import src.utills.GetAppIds as GetAppIds
-from src.utills.UrlGenerator import url_generator
-from src.crawler import SteamAppParser
+from src.api import ISteamApps
+from src.modules import GetNewGames
+import schedule
+from time import sleep
 
-# init
-cur_players = ISteamUserStats.GetNumberOfCurrentPlayers()
-# Loop
-# cur_players.db_update_current_players(cur_players,'watching_games')
+if __name__ == "__main__":
+    # init (instance)
+    cur_players = ISteamUserStats.GetNumberOfCurrentPlayers()
+    app_list = ISteamApps.GetAppList()
+    new_games = GetNewGames.GetNewAppid()
 
-schedule.every(1).minutes.do(cur_players.db_update_current_players, cur_players, 'watching_games')
-schedule.every(1).hours.do(GetAppIds.db_update_dist_table, 'player_count', 'watching_games')
-while True:
-    try:
+    # task1 : update watching_games table every day
+    schedule.every().day.at("12:00").do(new_games.api_update_new_games)
+
+    # task2 : get current_players of watching_games
+    schedule.every().hour.do(cur_players.db_update_current_players, cur_players, 0, 'watching_games',
+                             'app_current_players2')
+
+    # scheduler loop
+    while True:
         schedule.run_pending()
-    except:
-        pass
-    time.sleep(100)
+        sleep(0.5)

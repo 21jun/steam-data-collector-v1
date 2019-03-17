@@ -1,6 +1,7 @@
 import requests
 import odbc
-import src.utills.dateFormatter as df
+import time
+import src.utills.dateFormatter as dF
 from datetime import datetime
 
 
@@ -50,24 +51,24 @@ class GetNumberOfCurrentPlayers:
         except:
             return 0
 
-    def __db_insert_current_players(self, data):
+    def __db_insert_current_players(self, data, target):
 
-        sql = '''
-            INSERT INTO oasis.current_players(appid, name, player_count, date) VALUES ("%d","%s","%d","%s") '''
-        date = df.get_full_date()
+        sql = 'INSERT INTO oasis.' + str(target) + '''(appid, name, player_count, date) 
+        VALUES ("%d","%s","%d","%s") '''
+        date = dF.get_full_date()
         # print(data['appid'], data['name'], data['player_count'], date)
         self.db.execute(sql % (data['appid'], data['name'], int(data['player_count']), date))
         print(data['appid'], data['name'], int(data['player_count']), date)
 
     @staticmethod
-    def db_update_current_players(self, src='applist'):
+    def db_update_current_players(self, delay_sec=0, src='applist', target='app_current_players'):
         apps = self.__db_get_apps(src)
-        for app in (apps):
+        for idx, app in enumerate(apps):
+            # time.sleep(delay_sec)
             data = {'appid': app[0], 'name': app[1], 'player_count': self.__api_get_number_of_current_players(app[0])}
             if int(data['player_count']) == 0:
-                continue
-            # print(data)
-            self.__db_insert_current_players(data)
+                print("no players...")
+                # continue
+            print(str(datetime.now()), data, str(idx) + "/" + str(len(apps)))
+            self.__db_insert_current_players(data, target)
         print("====================" + str(datetime.now()) + "====================")
-
-
