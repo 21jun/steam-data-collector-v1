@@ -11,6 +11,11 @@ class GetNewAppid:
         db = connect.cursor()
         self.db = db
 
+    def __db_reconnect(self):
+        connect = odbc.odbc('oasis')
+        db = connect.cursor()
+        self.db = db
+
     def __db_get_data_from_src_table(self, col, src_table='applist'):
         sql = 'SELECT ' + str(col) + ' FROM oasis.' + str(src_table)
         self.db.execute(sql)
@@ -18,27 +23,38 @@ class GetNewAppid:
         return data
 
     def __db_delete_duplicated_appid_rows(self):
-        sql = """DELETE FROM oasis.watching_games 
-                WHERE
-                    id NOT IN (SELECT 
-                        *
+        sql = """
+        DELETE FROM oasis.watching_games 
+            WHERE
+                id NOT IN (SELECT 
+                    *
+                FROM
+                    (SELECT 
+                        MAX(id) AS id
                     FROM
-                        (SELECT 
-                            MAX(id) AS id
-                        FROM
-                            oasis.watching_games
-                        GROUP BY appid) A)
-            """
+                        oasis.watching_games
+                    GROUP BY appid) A)
+        """
         self.db.execute(sql)
 
-    def __db_update_dist_table(self, data, dist='watching_games'):
+    def __db_insert_dist_table(self, data, dist='watching_games'):
+        # regular expression
         p = re.compile('[a-zA-z가-힣\s\w]')
+
         sql_dist = 'INSERT INTO oasis.' + str(dist) + ' (appid, name) VALUES ("%d","%s")'
         for app in data:
             print(app[0], ''.join(p.findall(app[1])))
             self.db.execute(sql_dist % (int(app[0]), ''.join(p.findall(app[1]))))
 
     def api_update_new_games(self):
+        """
+        Starting point (entry)
+        """
+        # reconnect database
+        # 너무 오랜시간동안 db 접근이 없으면 Connection Error 가 발생함
+        # 업데이트 시작전에 재접속으로 해결
+        self.__db_reconnect()
+
         # fetch data
         old_applist_appid = self.__db_get_data_from_src_table('appid', 'applist')
         new_applist = ISteamApps.GetAppList.api_get_app_list()
@@ -69,7 +85,9 @@ class GetNewAppid:
 
         # update watching_games table
         # also delete duplicate rows using group by keyword
-        self.__db_update_dist_table(data=result, dist='watching_games')
+        self.__db_insert_dist_table(data=result, dist='watching_games')
         self.__db_delete_duplicated_appid_rows()
-        # update applist table
-        # TODO
+
+        # TODO: update applist table
+        update_app_list = ISteamApps.GetAppList()
+        # update_app_list.db_update_app_list()

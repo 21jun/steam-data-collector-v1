@@ -7,7 +7,6 @@ from time import sleep
 if __name__ == "__main__":
     # init (instance)
     cur_players = ISteamUserStats.GetNumberOfCurrentPlayers()
-    app_list = ISteamApps.GetAppList()
     new_games = GetNewGames.GetNewAppid()
 
     # task1 : update watching_games table every day

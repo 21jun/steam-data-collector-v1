@@ -1,6 +1,7 @@
 import requests
 import odbc
-
+import re
+import tqdm
 """
 How to use:
 1. get GetAppList instance
@@ -17,8 +18,9 @@ class GetAppList:
     @staticmethod
     def api_get_app_list():
         """
+        It's static because some cases use this method to get newest applist
         return all games in steam
-        approximately 67000+
+        approximately 75000+
         :return: list of {"appid":"appid (number)" , "name":"game name"}
         """
         url = 'http://api.steampowered.com/ISteamApps/GetAppList/v0001/'
@@ -34,16 +36,25 @@ class GetAppList:
         insert data into db
         :param sql: sql query
         :param data: data
-        :return: success or fail
         """
+        # for app in data:
+        #     appid = int(app['appid'])
+        #     name = app['name'].replace('\"', "'")
+        #     try:
+        #         self.db.execute(sql % (appid, name))
+        #     except:
+        #         print("exception occur")
+        #         continue
+        #     # print(app)
+
+        p = re.compile('[a-zA-z가-힣\s\w]')
         for app in data:
             appid = int(app['appid'])
-            name = app['name'].replace('\"', "'")
+            name = ''.join(p.findall(app['name']))
             try:
                 self.db.execute(sql % (appid, name))
-            except:
-                print("exception occur")
-                continue
+            except odbc.opError:
+                print("db Error (maybe emoji problem)")
             print(app)
 
     def __db_clear_old_appid(self):
@@ -59,6 +70,7 @@ class GetAppList:
         it takes 10~15 minutes...
         """
         data = self.api_get_app_list()
+        print(data)
         self.__db_clear_old_appid()
         sql = '''
             INSERT INTO oasis.applist(appid, name) 

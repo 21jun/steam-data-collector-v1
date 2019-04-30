@@ -1,10 +1,11 @@
 import odbc
 
-'''
+"""
 How to use:
 1. dist table will be truncated
-2. 
-'''
+2. call db_update_dist_table
+3. only for watching_games table and current_players table
+"""
 
 
 def __db_get_data_from_src_table(sql):

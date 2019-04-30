@@ -2,6 +2,7 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 from src.utills.dateFormatter import get_full_date
 from src.utills.MonthConverter import month_converter
+import logging as log
 import odbc
 import time
 
@@ -9,6 +10,11 @@ import time
 class DataBaseConnector:
 
     def __init__(self):
+        connect = odbc.odbc('oasis')
+        db = connect.cursor()
+        self.db = db
+
+    def db_reconnect(self):
         connect = odbc.odbc('oasis')
         db = connect.cursor()
         self.db = db
@@ -23,8 +29,9 @@ class DataBaseConnector:
         apps = self.db.fetchall()
         return apps
 
+    # TODO: 테이블 이름 지금은 app_info2임 나중에 필요하면 다른 테이블로 바꿔야함
     def __db_insert_data(self, data):
-        sql = '''INSERT INTO oasis.app_info(appid, name, developer, publisher, release_date,
+        sql = '''INSERT INTO oasis.app_info2(appid, name, developer, publisher, release_date,
         recent_review_evaluation, recent_review_count, recent_review_positive_percentage,
         all_review_evaluation, all_review_count, all_review_positive_percentage, tags, date) 
         VALUES ("%d","%s","%s","%s","%s","%s","%d","%d","%s","%d","%d","%s","%s") '''
@@ -37,6 +44,7 @@ class DataBaseConnector:
                                data['tags'], data['date']))
 
     def db_update_app_data(self, data):
+
         try:
             self.__db_insert_data(data)
             print(data['appid'], data['name'])
@@ -52,8 +60,13 @@ class HeadlessChrome:
         self.driver = self.__load_webdriver()
         self.soup = None
 
-    def __del__(self):
+    def reconnect(self):
         self.driver.quit()
+        self.driver = self.__load_webdriver()
+        self.soup = None
+
+    def __del__(self):
+        # self.driver.quit()
         print("quit")
 
     def __load_webdriver(self):
@@ -180,17 +193,24 @@ class GetAppInfo:
         return result
 
     def get_info(self):
+
         try:
+            log.info("try select tags")
             tags = self.soup.select(
                 '#game_highlights > div > div > div > div > div.glance_tags.popular_tags'
             )
+
             if tags:
+                log.info("tag exist")
                 self.tags = ','.join(self.clean_tags(tags[0].text))
 
+            log.info("try select info")
             info = self.soup.select(
                 '#game_highlights > div > div > div.glance_ctn_responsive_left > div '
             )
+
             if info:
+                log.info("info exist")
                 info = self.clean_info(info[0].text)
 
             for index, i in enumerate(info):
@@ -235,4 +255,3 @@ class GetAppInfo:
             return result
         except:
             return TimeoutError
-

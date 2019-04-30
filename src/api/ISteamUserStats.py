@@ -1,6 +1,7 @@
 import requests
 import odbc
 import time
+from json import JSONDecodeError
 import src.utills.dateFormatter as dF
 from datetime import datetime
 
@@ -34,22 +35,26 @@ class GetNumberOfCurrentPlayers:
         try:
             req = requests.get(url)
         except ConnectionError:
-            return 0
+            return None
         except TimeoutError:
-            return 0
+            return None
         except:
             print("Error occur")
-            return 0
+            return None
 
-        json_data = req.json()
+        try:
+            json_data = req.json()
+        except JSONDecodeError:
+            return None
+
         try:
             player_count = json_data['response']['player_count']
             # print(player_count)
             return player_count
         except KeyError:
-            return 0
+            return None
         except:
-            return 0
+            return None
 
     def __db_insert_current_players(self, data, target):
 
@@ -57,6 +62,10 @@ class GetNumberOfCurrentPlayers:
         VALUES ("%d","%s","%d","%s") '''
         date = dF.get_full_date()
         # print(data['appid'], data['name'], data['player_count'], date)
+        if not data['player_count']:
+            print("API ERROR")
+            print(data['appid'], data['name'], data['player_count'], date)
+            return
         self.db.execute(sql % (data['appid'], data['name'], int(data['player_count']), date))
         print(data['appid'], data['name'], int(data['player_count']), date)
 
@@ -66,8 +75,8 @@ class GetNumberOfCurrentPlayers:
         for idx, app in enumerate(apps):
             # time.sleep(delay_sec)
             data = {'appid': app[0], 'name': app[1], 'player_count': self.__api_get_number_of_current_players(app[0])}
-            if int(data['player_count']) == 0:
-                print("no players...")
+            if not data['player_count']:
+                print("api error")
                 # continue
             print(str(datetime.now()), data, str(idx) + "/" + str(len(apps)))
             self.__db_insert_current_players(data, target)
